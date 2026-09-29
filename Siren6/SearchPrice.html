@@ -38,6 +38,22 @@ td small{color:var(--sub);margin-left:6px}
 .st-b{color:var(--bless);font-weight:600}
 .st-c{color:var(--curse);font-weight:600}
 .empty{padding:28px;text-align:center;color:var(--sub)}
+.sortm{display:none;margin-bottom:8px;font-size:.9rem;color:var(--sub);align-items:center;gap:8px}
+.sortm select{width:auto}
+@media (max-width:640px){
+ .sortm{display:flex}
+ .wrap{overflow:visible;background:none;border:0;border-radius:0}
+ table,tbody{display:block;min-width:0;width:100%}
+ thead{display:none}
+ tbody tr{display:grid;grid-template-columns:repeat(6,1fr);gap:3px 8px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:8px}
+ td{display:block;border:0;padding:0;text-align:left;font-size:.92rem}
+ td.n{text-align:left}
+ td[data-l]::before{content:attr(data-l) " ";color:var(--sub);font-size:.78rem}
+ td.nm{order:-1;grid-column:1/-1;font-weight:600;font-size:1.05rem}
+ td.tp,td.stt,td.cn{grid-column:span 2}
+ td.by,td.sl{grid-column:span 3;margin-top:4px}
+ td.empty{grid-column:1/-1;padding:16px 0}
+}
 </style>
 </head>
 <body>
@@ -67,6 +83,8 @@ td small{color:var(--sub);margin-left:6px}
 </section>
 
 <div class="bar"><span id="count"></span><button class="reset" id="reset" type="button">条件をリセット</button></div>
+<div class="sortm"><label for="sortm">並べ替え</label>
+ <select id="sortm"><option value="">標準</option><option value="type">種別</option><option value="name">名前</option><option value="buy">買値（安い順）</option><option value="sell">売値（安い順）</option></select></div>
 <div class="wrap">
 <table>
  <thead><tr>
@@ -128,7 +146,7 @@ function render(){
   }
   $("rows").innerHTML = list.length ? list.map(v => {
     const cls = v.st === "b" ? "st-b" : v.st === "c" ? "st-c" : "";
-    return `<tr><td>${v.type}</td><td>${v.name}</td><td class="${cls}">${STATES[v.st]}</td><td class="n">${v.c === null ? "－" : v.c}</td><td class="n">${v.b.toLocaleString()}</td><td class="n">${v.s.toLocaleString()}</td></tr>`;
+    return `<tr><td class="tp" data-l="種別">${v.type}</td><td class="nm">${v.name}</td><td class="stt ${cls}" data-l="状態">${STATES[v.st]}</td><td class="n cn" data-l="回数">${v.c === null ? "－" : v.c}</td><td class="n by" data-l="買値">${v.b.toLocaleString()}</td><td class="n sl" data-l="売値">${v.s.toLocaleString()}</td></tr>`;
   }).join("") : `<tr><td colspan="6" class="empty">条件に合うアイテムがありません。価格を確認してください。</td></tr>`;
   $("count").textContent = `${list.length} 件`;
 }
@@ -139,10 +157,11 @@ document.querySelectorAll("th button").forEach(b => b.addEventListener("click", 
   sortDir = (sortKey === k) ? -sortDir : 1;
   sortKey = k; render();
 }));
+$("sortm").addEventListener("change", e => { sortKey = e.target.value; sortDir = 1; render(); });
 $("reset").addEventListener("click", () => {
   document.querySelectorAll("#types input").forEach(e => e.checked = true);
   ["name","buy","sell"].forEach(id => $(id).value = "");
-  sortKey = ""; sortDir = 1; render();
+  sortKey = ""; sortDir = 1; $("sortm").value = ""; render();
 });
 render();
 </script>
